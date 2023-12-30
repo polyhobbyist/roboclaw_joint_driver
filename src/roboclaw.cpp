@@ -22,7 +22,7 @@ void Roboclaw::write(bool crc, std::vector<uint8_t> data)
 
 uint8_t Roboclaw::read(uint8_t& data)
 {
-  return serial_.read_some(boost::asio::buffer(&data, 1));
+  return serial_->read_some(boost::asio::buffer(&data, 1));
 }
 
 void Roboclaw::updateCRC(uint16_t& crc, uint8_t data)
@@ -41,38 +41,51 @@ void Roboclaw::updateCRC(uint16_t& crc, uint8_t data)
     }
 }
 
-void updateCRC(uint16_t& crc, std::vector<uint8_t>& data)
+void Roboclaw::updateCRC(uint16_t& crc, std::vector<uint8_t>& data)
 {
-    for (auto byte : data)
+    for (uint8_t byte : data)
     {
         updateCRC(crc, byte);
     }
 }
 
 
-Roboclaw::Roboclaw(boost::asio::io_service& io_service, const std::string& port, uint32_t baud_rate, int roboclawAddress)
-: port_(port), 
-  baud_rate_(baud_rate), 
-  serial_(io_service, port_), 
-  roboclawAddress_(roboclawAddress)
+bool Roboclaw::open(const std::string& port, uint32_t baud_rate, int roboclawAddress)
 {
-    serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
-}
+  port_ = port;
+  baud_rate_ = baud_rate;
+  roboclawAddress_ = roboclawAddress;
+  ios_ = std::make_shared<asio::io_service>();
+  ios_thread_->create_thread(
+    [this]() {
+      ios().run();
+    });
 
-void Roboclaw::open()
-{
-    serial_.open(port_);
+
+  serial_ = std::make_shared<boost::asio::serial_port>(ios_, port_), 
+  serial_->set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
+  try 
+  {
+    serial_->open(port_);
+    return true;
+  }
+  catch (boost::system::system_error& e)
+  {
+    return false;
+  }
 }
 
 void Roboclaw::close()
 {
-    serial_.close();
+  serial_->close();
+  ios().stop();
+  ios_thread_->join();
 }
 
 std::string Roboclaw::getVersion()
 {
   uint16_t crc = 0;
-  std::vector<uint8_t> data = { roboclawAddress_, Command::GetVersion };
+  std::vector<uint8_t> data = { roboclawAddress_, Roboclaw::Command::GetVersion };
   updateCRC(crc, data);
   write(false, data);
 
@@ -100,6 +113,6 @@ std::string Roboclaw::getVersion()
       break;
     }
 
-    ss << read;
+    ss << readData;
   }
 }

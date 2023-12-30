@@ -45,6 +45,17 @@ public:
   hardware_interface::return_type write(
     const rclcpp::Time & time, const rclcpp::Duration & period) override;    
 
-  private:
+private:
   Roboclaw roboclaw_;
+  std::vector<double> hw_commands_;
+  std::vector<double> hw_positions_;
+  std::vector<double> hw_velocities_;  
+
+  std::string port_;
+  uint32_t baud_rate_;
+  uint8_t roboclaw_address_;
+
+  std::string left_joint_name_;
+  std::string right_joint_name_;
+
 };

@@ -8,10 +8,10 @@ class Roboclaw
 {
     std::string port_;
     uint32_t baud_rate_;
-    boost::asio::serial_port serial_;
+    std::shared_ptr<boost::asio::serial_port> serial_;
     uint8_t roboclawAddress_;
 
-    typedef enum RoboclawCommand : uint8_t {
+    enum Command : uint8_t {
         GetVersion = 21,
     };
 
@@ -23,7 +23,10 @@ class Roboclaw
 
 public:
     Roboclaw();
-    bool open(boost::asio::io_service& io_service, const std::string& port, uint32_t baud_rate, int roboclawAddress);
+    bool open(const std::string& port, uint32_t baud_rate, int roboclawAddress);
     void close();
     std::string getVersion();
+
+     std::shared_ptr<asio::io_service> ios_;
+     std::thread ios_thread_;
 };

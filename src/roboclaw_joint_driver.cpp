@@ -30,17 +30,11 @@ SOFTWARE.
 #include <boost/asio.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <geometry_msgs/msg/twist.hpp>
-
+#include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "roboclaw_joint_driver.h"
 
-RoboClawJointDriver::RoboClawJointDriver()
-: Node("roboclaw_joint_driver")
+RoboClawJointHardware::RoboClawJointHardware()
 {
-  this->declare_parameter<std::string>("port", "/dev/ttyACM0");
-  this->declare_parameter<int>("baud_rate", 115200);
-  this->declare_parameter<int>("roboclaw_address", 128);
-  this->declare_parameter<std::string>("left_frame", "left");
-  this->declare_parameter<std::string>("right_frame", "right");
 }
 
 hardware_interface::CallbackReturn RoboClawJointHardware::on_init(
@@ -51,6 +45,12 @@ hardware_interface::CallbackReturn RoboClawJointHardware::on_init(
   {
     return hardware_interface::CallbackReturn::ERROR;
   }
+
+  port_ = info_.hardware_parameters["port"];
+  baud_rate_ = std::stoi(info_.hardware_parameters["baud_rate"]);
+  roboclaw_address_ = std::stoi(info_.hardware_parameters["roboclaw_address"]);
+  left_joint_name_ = info_.hardware_parameters["left"];
+  right_joint_name_ = info_.hardware_parameters["right"];
 
   hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -149,9 +149,9 @@ hardware_interface::CallbackReturn RoboClawJointHardware::on_activate(
     }
   }
 
-  if (roboclaw_.open(get_node_base_interface()->get_context()->get_serial_io_service(), port_, baud_rate_, roboclaw_address_)) 
+  if (roboclaw_.open(port_, baud_rate_, roboclaw_address_)) 
   {
-    RCLCPP_INFO(rclcpp::get_logger("RoboClawJointHardware"), "Successfully activated! %s", roboclaw_.GetVersion().c_str());
+    RCLCPP_INFO(rclcpp::get_logger("RoboClawJointHardware"), "Successfully activated! %s", roboclaw_.getVersion().c_str());
   }
   else
   {
@@ -176,7 +176,7 @@ hardware_interface::return_type RoboClawJointHardware::read(
   return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type ros2_control_demo_example_2 ::RoboClawJointHardware::write(
+hardware_interface::return_type RoboClawJointHardware::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
 
