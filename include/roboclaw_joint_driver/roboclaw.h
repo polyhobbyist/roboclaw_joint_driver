@@ -27,6 +27,6 @@ public:
     void close();
     std::string getVersion();
 
-     std::shared_ptr<asio::io_service> ios_;
+     std::shared_ptr<boost::asio::io_service> ios_;
      std::thread ios_thread_;
 };

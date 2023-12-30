@@ -15,7 +15,8 @@ void Roboclaw::write(bool crc, std::vector<uint8_t> data)
         data.push_back(crc >> 8);
         data.push_back(crc & 0xFF);
     }
-    boost::asio::write(serial_, boost::asio::buffer(data, data.size()));
+
+    serial_->write_some(boost::asio::buffer(data));
 }
 
 #include <boost/asio/serial_port.hpp> // Include the missing header file
@@ -55,14 +56,11 @@ bool Roboclaw::open(const std::string& port, uint32_t baud_rate, int roboclawAdd
   port_ = port;
   baud_rate_ = baud_rate;
   roboclawAddress_ = roboclawAddress;
-  ios_ = std::make_shared<asio::io_service>();
-  ios_thread_->create_thread(
-    [this]() {
-      ios().run();
-    });
+  ios_ = std::make_shared<boost::asio::io_service>();
+  ios_thread_ = std::thread([this]() { ios_->run(); });
 
 
-  serial_ = std::make_shared<boost::asio::serial_port>(ios_, port_), 
+  serial_ = std::make_shared<boost::asio::serial_port>(*ios_);
   serial_->set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
   try 
   {
@@ -78,8 +76,8 @@ bool Roboclaw::open(const std::string& port, uint32_t baud_rate, int roboclawAdd
 void Roboclaw::close()
 {
   serial_->close();
-  ios().stop();
-  ios_thread_->join();
+  ios_->stop();
+  ios_thread_.join();
 }
 
 std::string Roboclaw::getVersion()
@@ -115,4 +113,6 @@ std::string Roboclaw::getVersion()
 
     ss << readData;
   }
+
+  return ss.str();
 }
