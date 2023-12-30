@@ -22,16 +22,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-add_executable(${PROJECT_NAME} 
-  src/main.cpp
-  src/roboclaw.cpp
-  )
-set_target_properties(${PROJECT_NAME} PROPERTIES
-  MAP_IMPORTED_CONFIG_MINSIZEREL Release
-  MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release
-  )
-
-
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -39,19 +29,45 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(Boost REQUIRED system)
 
+find_package(hardware_interface REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+
 include_directories(
   include/${PROJECT_NAME}
   ${SOURCE_DIR}/include
 )
 
+add_library(${PROJECT_NAME} 
+  SHARED
+  src/main.cpp
+  src/roboclaw.cpp
+  src/roboclaw_joint_driver.cpp
+  )
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  MAP_IMPORTED_CONFIG_MINSIZEREL Release
+  MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release
+  )
+
+# Causes the visibility macros to use dllexport rather than dllimport,
+# which is appropriate when building the dll but not consuming it.
+target_compile_definitions(${PROJECT_NAME} PRIVATE "ROBOCLAW_JOINT_DRIVER_BUILDING_DLL")  
 
 ament_target_dependencies(${PROJECT_NAME} 
   rclcpp
   std_msgs
   geometry_msgs
-  Boost)
+  Boost
+  hardware_interface
+  pluginlib
+  rclcpp
+  rclcpp_lifecycle
+)
 
 install(TARGETS ${PROJECT_NAME}
+    EXPORT export_roboclaw_joint_driver
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin
@@ -76,4 +92,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+## EXPORTS
+ament_export_targets(export_roboclaw_joint_driver HAS_LIBRARY_TARGET)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_package()

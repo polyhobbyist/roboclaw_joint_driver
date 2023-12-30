@@ -7,7 +7,18 @@
   <maintainer email="lou@polyhobbyist.com">Lou Amadio</maintainer>
   <license>MIT</license>
 
+  <depend>hardware_interface</depend>
+  <depend>pluginlib</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_lifecycle</depend>
+
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>diff_drive_controller</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>joint_state_publisher_gui</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>ros2_control_demo_description</exec_depend>
+  <exec_depend>ros2_controllers_test_nodes</exec_depend>
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
   <depend>libboost-system-dev</depend>

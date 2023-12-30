@@ -26,13 +26,14 @@ SOFTWARE.
 
 #include <memory>
 #include <chrono>
+#include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include <boost/asio.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 
-#include "roboclaw_joint_driver.h"
 #include "roboclaw.h"
+#include "roboclaw_joint_driver.h"
 
 int main(int argc, char * argv[])
 {

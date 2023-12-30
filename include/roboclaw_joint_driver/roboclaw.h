@@ -22,8 +22,8 @@ class Roboclaw
     void updateCRC(uint16_t& crc, std::vector<uint8_t>& data);
 
 public:
-    Roboclaw(boost::asio::io_service& io_service, const std::string& port, uint32_t baud_rate, int roboclawAddress);
-    void open();
+    Roboclaw();
+    bool open(boost::asio::io_service& io_service, const std::string& port, uint32_t baud_rate, int roboclawAddress);
     void close();
     std::string getVersion();
 };
