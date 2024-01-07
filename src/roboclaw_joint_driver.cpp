@@ -170,7 +170,7 @@ hardware_interface::CallbackReturn RoboClawJointHardware::on_deactivate(
 }
 
 hardware_interface::return_type RoboClawJointHardware::read(
-  const rclcpp::Time & /*time*/, const rclcpp::Duration & period)
+  const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
 
   return hardware_interface::return_type::OK;

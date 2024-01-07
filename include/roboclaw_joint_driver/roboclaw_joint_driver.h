@@ -16,7 +16,7 @@
 class RoboClawJointHardware : public hardware_interface::SystemInterface
 {
 public:
-  RCLCPP_SHARED_PTR_DEFINITIONS(RoboClawJointHardware);
+  RCLCPP_SHARED_PTR_DEFINITIONS(RoboClawJointHardware)
   RoboClawJointHardware();
 
   ROBOCLAW_JOINT_DRIVER_PUBLIC
